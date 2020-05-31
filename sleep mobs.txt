@@ -1,0 +1,34 @@
+uses SysUtils, Classes;
+
+procedure sleepMobs();
+var
+    i,y : integer;
+    mobOID : Cardinal;
+    friend : TL2Char;
+    sleep : TL2Buff;
+    mob : TL2NPC;
+begin
+    while true do begin
+    delay(1000);
+    sleep := nil;
+    CharList.ByName('Corona', friend);
+         for i := 0 to NpcList.Count-1 do begin
+            mobOID := NpcList.Items(i).OID;
+            mob := NpcList.Items(i);
+
+            if(mobOID <> friend.Target.OID) then begin
+                if((User.DistTo(mob) < 400)) then begin
+                            mob.Buffs.ByName('Sleep',sleep);
+                            if(sleep = nil) then begin
+                                Engine.SetTarget(NpcList.Items(i));
+                                Engine.UseSkill('Sleep');
+                            end;
+                 end;   
+           end; 
+         end;
+    end;
+end;
+
+begin
+    Script.NewThread(@sleepMobs);
+end.

@@ -1,0 +1,74 @@
+uses SysUtils, Classes;
+
+procedure NearestTargetThread();
+var
+    myKey,b,i : integer;
+    Chars : TCharList;
+    myTarget : TL2Char;
+begin
+    while true do begin
+        Engine.WaitAction([lakey],myKey,b);
+        if (myKey = 192) then begin
+            Chars := CharList;
+            myTarget := FindClosestEnemy(Chars);
+            if myTarget <> nil then Engine.SetTarget(myTarget.Name);
+        end;
+    end;
+end;
+
+function FindClosestEnemy(Chars: TCharList): TL2Char;
+var
+    i : integer;
+    minDist : Cardinal;
+    secondMin : TL2Char;
+begin
+    result := nil;
+    minDist := 999999;
+    for i := 0 to Chars.Count-1 do begin
+        if((minDist > User.DistTo(Chars.Items(i))) and Chars.Items(i).Attackable and (Chars.Items(i) <> User.Target)) then
+            begin
+                  minDist := User.DistTo(Chars.Items(i));
+                  result := Chars.Items(i);
+            end;
+    end;
+    if User.Target = result then result := secondMin;
+end;
+
+procedure CancelEnemySkillsThread();
+var
+    i : integer;
+    Chars : TCharList;
+begin
+while true do begin
+    Chars := CharList;
+    for i := 0 to Chars.Count-1 do begin
+        if((650 > User.DistTo(Chars.Items(i))) and Chars.Items(i).Attackable) then
+            begin
+                 if(cardinalInList(Chars.Items(i).Cast.ID,[1341]) and (Chars.Items(i).Cast.EndTime > 0)) then
+                 begin
+                    if User.Target <> Chars.Items(i)then Engine.SetTarget(Chars.Items(i));
+                    Engine.UseSkill(10015,true,false);
+                 end;
+            end;
+    end;
+end;
+end;
+
+function cardinalInList(item : Cardinal; list : array of Cardinal): boolean;
+var i:integer;
+begin
+    result := false;
+    if item >= list[0] then
+        begin
+            for i:=low(list) to high(list) do
+                begin
+                    if  item = list[i] then begin result:=true; break; end;
+                end;
+        end;
+end;
+
+
+begin
+    Script.NewThread(@NearestTargetThread);
+    Script.NewThread(@CancelEnemySkillsThread);
+end.

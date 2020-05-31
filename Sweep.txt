@@ -1,0 +1,96 @@
+uses SysUtils, Classes, RegExpr;
+
+procedure SweepThread(dist: integer);
+var
+  sweep: TL2Skill;
+  mob: TL2Npc;
+  point: TXYZ;
+begin
+  while Delay(500) do begin                          // run the loop
+    if (Engine.Status = lsOnline)                    // if we are online
+    and SkillList.ByID(42, sweep) then begin         // and we have skill Sweep [id: 42], then
+      mob:= GetNearestSweepableMob(dist);            // looking for the nearest mob which u can sweep
+      if (mob <> nil) then begin                     // if the mob is found, then 
+        if Engine.SetTarget(mob) then Delay(99);     // take mob in target
+        if (User.DistTo(mob) > 100) then begin       // if distance to mob > 100, then
+          point:= CalcXYZ(User, mob, -20);           // calculate the coordinates of a point in order to approach the sweep
+          if Engine.MoveTo(point.X, point.Y, point.Z) then Delay(500);   // come to the point found
+        end;
+        if Engine.UseSkill(sweep) then               // if we successfully used a sweep, then
+          while (sweep.EndTime <> 0) do Delay(99);   // wait cooldown
+      end;
+    end;
+  end;
+end;
+
+function GetNearestSweepableMob(dist: integer): TL2Npc;   // returns the nearest mob you can sweep
+var i: integer;
+begin
+  Result:= nil;
+  for i:= 0 to NpcList.Count-1 do begin       // running through the list of NPC around us
+    if (NpcList(i).Valid)                     // if mob is valid
+    and (User.DistTo(NpcList(i)) < dist)      // and the distance is less than the maximum allowable
+    and (NpcList(i).Dead)                     // and this mob is dead
+    and (NpcList(i).Sweepable) then begin     // and this mob is sweepable
+      Result:= NpcList(i);                    // then we memorize it as a result
+      dist:= User.DistTo(NpcList(i));         // update the value of the maximum allowable distance
+    end;
+  end;
+end;
+
+procedure PMCommands();
+var
+  Names: TStringList;
+  senderIndex: integer;
+  msg:TChatMessage;
+  text: string;
+  p2: pointer;
+  Obj: TL2Object;
+begin
+  Names := TStringList.Create;
+  while true do begin
+    Engine.WaitAction([laChat],msg,p2);
+    text := Copy(msg.Text, 3, Length(msg.Text));
+    if(((msg.Sender = 'DrPepper') or (msg.Sender = 'Nipple')) and (msg.ChatType = mtPrivate)) then begin
+      case (text) of
+      's': Engine.UseAction(0);
+      'f': Follow(msg.Sender);
+      'h': UseSkill('Heal',msg.Sender);
+      'r': UseSkill('Recharge',msg.Sender);
+      'gh': UseSkill('Group Heal',msg.Sender);
+      'stand here': begin CharList.ByName(msg.Sender,Obj); Engine.MoveTo(Obj as TL2Spawn,0); end;
+      'sit here': begin CharList.ByName(msg.Sender,Obj); if(Engine.MoveTo(Obj as TL2Spawn,0)) then Engine.UseAction(0); end;
+      end;
+    end;
+  end;
+end;
+
+procedure UseSkill(skill,target: string);
+begin
+  if(User.Sitting) then begin
+    Engine.UseAction(0);
+    Delay(1800);
+  end;
+
+  Engine.SetTarget(target); 
+  Engine.UseSkill(skill);
+end;
+
+procedure Follow(target: string);
+begin
+  if(User.Sitting) then begin
+    Engine.UseAction(0);
+    Delay(1800);
+  end;
+
+  Engine.SetTarget(target);
+  Engine.Attack;
+end;
+
+
+begin
+  Script.NewThread(@SweepThread, Pointer(300));   // the second argument is the max distance for the sweep
+  Script.NewThread(@PMCommands);
+  
+  Delay(-1);
+end.

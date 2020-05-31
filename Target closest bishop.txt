@@ -1,0 +1,119 @@
+uses SysUtils, Classes;
+var
+  globalTarget : TL2Live;
+
+procedure NearestTargetThread();
+var
+    myKey,b,i : integer;
+    Chars : TCharList;
+    myTarget : TL2Char;
+begin
+    while true do begin
+        Engine.WaitAction([lakey],myKey,b);
+        if (myKey = 192) then begin
+            Chars := CharList;
+            myTarget := FindClosestEnemy(Chars);
+            if (myTarget <> nil) then begin
+              Engine.SetTarget(myTarget.Name);
+            end;
+            //Engine.UseAction(78,false,false);
+        end;
+    end;
+end;
+
+function FindClosestEnemy(Chars: TCharList): TL2Char;
+var
+    i : integer;
+    minDist : Cardinal;
+    secondMin : TL2Char;
+begin
+    result := nil;
+    minDist := 999999;
+    for i := 0 to Chars.Count-1 do begin
+        if((minDist > User.DistTo(Chars.Items(i))) and Chars.Items(i).Attackable and (Chars.Items(i) <> User.Target) and (Chars.Items(i).ClassID = 97)) then
+            begin
+                  minDist := User.DistTo(Chars.Items(i));
+                  result := Chars.Items(i);
+            end;
+    end;
+    if User.Target = result then result := secondMin;
+    globalTarget := result;
+end;
+
+procedure CancelEnemySkillsThread();
+var
+    i : integer;
+    Chars : TCharList;
+begin
+while true do begin
+    Chars := CharList;
+    for i := 0 to Chars.Count-1 do begin
+        if((810 > User.DistTo(Chars.Items(i))) and Chars.Items(i).Attackable) then
+            begin
+                 if((Chars.Items(i).Cast.ID = 1341) and (Chars.Items(i).Cast.EndTime > 0)) then
+                 begin
+                    if User.Target <> Chars.Items(i)then Engine.SetTarget(Chars.Items(i));
+                    Engine.UseSkill(10015,true,false);
+                 end;
+            end;
+    end;
+end;
+end;
+
+procedure PutStarOnEnemyThread();
+begin
+  while delay(550) do begin
+  if(User.Target <> globalTarget) then begin
+    globalTarget := User.Target;
+    if (User.Target.Attackable) then begin
+      Engine.Say('Target ->'+User.Target.Name,3,'');
+      Engine.UseAction(78,false,false);
+      globalTarget := User.Target;
+    end;
+  end;
+  end;
+end;
+
+procedure SayWhenDeadThread();
+begin
+  while true do begin
+    if((User.Target <> nil) and User.Target.Dead and (User.Target <> globalTarget)) then begin
+      Engine.Say(User.Target.Name + ' DIEDED',3,'');
+      globalTarget:=User.Target;
+    end;
+  end;
+end;
+
+procedure WhenLowThread();
+begin
+  while true do begin
+    if(User.HP < 35) then Engine.UseSkill('Arcane Shield');
+  end;
+end;
+
+procedure ManaThread();
+begin
+  while true do begin
+    if(User.MP < 90) then Engine.UseItem('Mana Recovery Potion');
+    delay(9*1000);
+  end;
+end;
+
+procedure CDLThread();
+begin
+  while true do begin
+    if(User.HP < 45) then Engine.UseSkill('Curse Death Link');
+  end;
+end;
+
+
+begin
+    globalTarget := nil;
+    Script.NewThread(@NearestTargetThread);
+    //Script.NewThread(@WhenLowThread);
+    Script.NewThread(@ManaThread);
+    //Script.NewThread(@CDLThread);    
+    //Script.NewThread(@CancelEnemySkillsThread);
+    //Script.NewThread(@PutStarOnEnemyThread);
+    //Script.NewThread(@SayWhenDeadThread);
+end.

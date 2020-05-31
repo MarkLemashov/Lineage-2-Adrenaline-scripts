@@ -1,0 +1,46 @@
+uses SysUtils;
+var
+  i:integer;
+
+function findLeftX(Adenas : TDropList) : integer;
+var
+  i:integer;
+begin
+  Result := 9999999;
+  for i:=0 to Adenas.Count-1 do begin
+    if (Adenas.Items(i).X < Result) and (User.DistTo(Adenas.Items(i))<130) then Result:=Adenas.Items(i).X;
+  end;
+end;
+
+function findBottomY(Adenas : TDropList) : integer;
+var
+  i:integer;
+begin
+  Result := 9999999;
+  for i:=0 to Adenas.Count-1 do begin
+    if (Adenas.Items(i).Y < Result) and (User.DistTo(Adenas.Items(i))<130) then Result:=Adenas.Items(i).Y;
+  end;
+end;
+
+function BottomLeftItem(x,y:integer): TL2Drop;
+var
+  i:integer;
+begin
+  result := nil;
+  for i:=0 to DropList.Count-1 do begin
+     if(DropList.Items(i).X = x) and (DropList.Items(i).Y = y) then begin
+      result:= DropList.Items(i);
+      break;
+     end;
+  end;
+end;
+
+begin
+  print('User location: (' + inttostr(User.X)+ ',' + inttostr(User.Y)+',' + inttostr(User.Z)+')');
+  print('Bottom Left: (' + inttostr(findLeftX(DropList))+ ',' + inttostr(findBottomY(DropList))+','+ inttostr(BottomLeftItem(findLeftX(DropList),findBottomY(DropList)).Z)+')');
+  print('Distance from user to bottom left = ' + inttostr(User.DistTo(BottomLeftItem(findLeftX(DropList),findBottomY(DropList)))));
+  for i:=0 to DropList.Count-1 do begin
+    if DropList.Items(i).Name = 'Adena' then
+      print('('+inttostr(DropList.Items(i).X) +','+ inttostr(DropList.Items(i).Y)+')');
+  end;
+end.

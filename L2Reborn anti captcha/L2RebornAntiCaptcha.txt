@@ -1,0 +1,125 @@
+uses SysUtils, Classes, RegExpr;  // plug in module RegExpr
+
+var
+p1,p2: pointer;
+teststr: string;
+lastDlgText: string;
+
+procedure Alert();
+begin
+  while delay(1000) do begin
+  if (((lastDlgText <> Engine.DlgText) and ((Pos('Dual', Engine.DlgText)>0) or (Pos('dual', Engine.DlgText)>0))) or (Engine.ConfirmDlg.Valid and ((Pos('Antibot',Engine.ConfirmDlg.Sender) > 0) or (Pos('ANTIBOT',Engine.ConfirmDlg.Sender) > 0) or(Pos('antibot',Engine.ConfirmDlg.Sender) > 0)))) then begin
+    Engine.BlinkWindow(true);
+    delay(5000)
+  end;
+  delay(100);
+  end;
+end;
+
+procedure solveRegular();
+	var
+	RegExp: TRegExpr;
+	a,b,c: integer;
+	str: string;
+	pressButton : boolean;  //true = ok, false = cancel
+	equationIsCorrect : boolean;
+	begin
+	RegExp := TRegExpr.Create;
+	equationIsCorrect := true;
+	while delay(100) do begin
+	if(Engine.ConfirmDlg.Valid) then begin
+	Engine.Msg('Captcha recieved',Engine.ConfirmDlg.Sender,1);
+	delay(1500);
+	str := LowerCase(Engine.ConfirmDlg.Sender);
+	str := stringreplace(str,'?',' ',[rfReplaceAll, rfIgnoreCase]);
+	pressButton :=  ((Pos('ck 0 k',str) > 0) or (Pos('ck o k',str) > 0) or (Pos('ck ok',str) > 0) or (Pos('ck 0k',str) > 0) or (Pos('ck o.k',str) > 0) or (Pos('ck 0.k',str) > 0));
+		if(Pos('=',str) > 0) then begin
+			RegExp.Expression:= '([0-9]+ )';
+			if RegExp.Exec(str) then begin
+      			a := strtoint(TrimRight(RegExp.Match[0]));
+      			RegExp.ExecNext;
+      			b := strtoint(TrimRight(RegExp.Match[0]));
+      			RegExp.ExecNext;
+      			c := strtoint(TrimRight(RegExp.Match[0]));
+      			equationIsCorrect := a+b=c;
+      			if (not equationIsCorrect) then pressButton := not pressButton;
+			end;
+		end;
+		
+		Engine.ConfirmDialog(pressButton);
+		if(pressButton) then Engine.Msg('Answer',' OK',	$008000)
+		else Engine.Msg('Answer',' Cancel',	$008000);
+		//RegExp.Free;
+		end;
+		end;
+		end;
+
+procedure solveDualbox();
+var
+  count: integer;
+begin
+  while true do begin
+    if(((Pos('dual', Engine.DlgText)>0) or (Pos('Dual', Engine.DlgText)>0) or (Pos('ANTI', Engine.DlgText)>0) or (Pos('anti', Engine.DlgText)>0) or (Pos('Anti', Engine.DlgText)>0))and (lastDlgText <> Engine.DlgText)) then begin
+      delay(3000);
+      Engine.FaceControl(0,false);
+      while(lastDlgText <> Engine.DlgText) do begin
+        lastDlgText := Engine.DlgText;
+        BypassDualboxCaptcha();
+        delay(1200);
+      end;
+      Engine.FaceControl(0,true);
+      Engine.Msg('','Passed dualbox captcha successfuly',$008000);
+    end;
+  end;
+end;
+
+procedure BypassDualboxCaptcha();
+var
+  RegExp: TRegExpr;
+  SL: TStringList;
+  i: integer;
+  bps: string;
+begin                                           
+  RegExp:= TRegExpr.Create;                                
+  SL:= TStringList.Create;
+
+  RegExp.Expression:= '<button *(.+?)>';  
+  if RegExp.Exec(Engine.DlgText) then                      
+    repeat SL.Add(RegExp.Match[0]);                        
+    until (not RegExp.ExecNext);                            
+
+  for i:= 0 to SL.Count-1 do begin                                            
+      RegExp.Expression:= '"bypass *(.+?)right"';             
+      if RegExp.Exec(SL[ i ]) then                          
+        bps:= TrimLeft(Copy(RegExp.Match[0], 11, Length(RegExp.Match[0])-11));
+    end;
+                                                 
+  if (Length(bps) > 0) then begin
+    print('------dualbox captcha answer------' + bps);
+    Engine.BypassToServer(bps);
+  end;
+  
+  RegExp.Free;                                              
+  SL.Free;
+end;
+
+procedure validation();
+begin
+  while delay(500) do begin
+    if(User.Name <> 'Pandereta') then begin
+      Engine.Msg('Error','*Character not registered, script stopped*',$0000FF	);
+      Script.Stop;
+    end;
+  end;
+end;
+
+begin
+
+  Print('* Script is running v2.1 *');
+  lastDlgText := 'bananabandana';
+  Script.NewThread(@validation);
+  Script.NewThread(@Alert);
+  Script.NewThread(@solveRegular);
+  Script.NewThread(@solveDualbox);
+
+end.

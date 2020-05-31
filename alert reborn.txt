@@ -1,0 +1,180 @@
+uses SysUtils, Classes, RegExpr;  // plug in module RegExpr
+
+var
+p1,p2: pointer;
+teststr: string;
+
+procedure PrintAllTags();   // print all designs with bypasses
+var RegExp: TRegExpr; 
+begin
+  while delay(10000) do begin
+    RegExp:= TRegExpr.Create;
+    RegExp.Expression:= '(<a *(.+?)</a>)|(<button *(.+?)>)';   
+    if RegExp.Exec(Engine.DlgText) then 
+      repeat Print(RegExp.Match[0]);
+      until (not RegExp.ExecNext);  
+    RegExp.Free;
+    print('-----');
+  end;
+end;
+
+procedure UnEquip();
+begin
+    while delay(3000) do begin
+      if((User.Target = nil) and (User.PAtk > 33)) then begin Engine.UseItem(8823); end;
+    end;
+end;
+
+procedure Alert();
+begin
+  while delay(1000) do begin
+  print('Hlptext___________');
+  if Engine.Hlptext <> '' then print(Engine.Hlptext);
+  print('CBtext___________');
+  if Engine.CBtext <> '' then print(Engine.CBtext);
+  print('ConfirmDlg.Sender___________');
+  print(Engine.ConfirmDlg.Sender);
+  print('Dlgtext___________');
+  if Engine.DlgText <> '' then print(Engine.DlgText);
+  if((Engine.ConfirmDlg.Valid and (Engine.ConfirmDlg.Sender <> 'Gemini')) or (Pos('Dual', Engine.DlgText)>0) or (Pos('dual', Engine.DlgText)>0) or (Pos('ANTI', Engine.DlgText)>0) or (Pos('anti', Engine.DlgText)>0) or (Pos('Anti', Engine.DlgText)>0)) then begin
+    Engine.BlinkWindow(true);
+    Engine.BlinkWindow(false);
+    SendToDiscord('b98c9f4971ea1b98227a07915a90c734','Alert!');
+    SendToTelegram('d753f00b6e9d6c0f50f15b41cc9d338e','Alert!');
+    print(Engine.ConfirmDlg.Sender);
+    PlaySound('C:\Users\markl\OneDrive\Desktop\IMPORTANT\Adren\Sounds\dc.wav');
+    
+    delay(5000)
+  end;
+  delay(100);
+  end;
+end;
+
+procedure solveRegular();
+	var
+	RegExp: TRegExpr;
+	a,b,c: integer;
+	str: string;
+	begin
+	RegExp := TRegExpr.Create;
+	while delay(100) do begin
+	if(Engine.ConfirmDlg.Valid) then begin
+	delay(1500);
+	str := stringreplace(Engine.ConfirmDlg.Sender,'o','0',[rfReplaceAll, rfIgnoreCase]);
+	str := stringreplace(str,'i','1',[rfReplaceAll, rfIgnoreCase]);
+	str := stringreplace(str,'l','1',[rfReplaceAll, rfIgnoreCase]);
+	str := stringreplace(str,'?',' ',[rfReplaceAll, rfIgnoreCase]);
+		if(Pos('=',str) > 0) then begin
+			RegExp.Expression:= '([0-9]+ )';
+			if RegExp.Exec(str) then begin
+      			a := strtoint(TrimRight(RegExp.Match[0]));
+      			RegExp.ExecNext;
+      			b := strtoint(TrimRight(RegExp.Match[0]));
+      			RegExp.ExecNext;
+      			c := strtoint(TrimRight(RegExp.Match[0]));
+      			Engine.ConfirmDialog(a+b=c);
+			end;
+			end
+			else begin
+				Engine.ConfirmDialog((Pos('OK',str) > 0) or (Pos('0K',str)>0) or (Pos('0k',str) > 0) or (Pos('ok',str)>0));
+			end;
+		//RegExp.Free;
+		end;
+		end;
+		end;
+	
+procedure test();
+	var
+	RegExp: TRegExpr;
+	a,b,c: integer;
+	//str: string;
+	begin
+	RegExp := TRegExpr.Create;
+	//str:='ANTIBOT: 6 + 3 = 9?Click OK if sum is correct (cancel otherwise).Haz click en OK si la suma es correcta, sino cancela.';
+	while delay(100) do begin
+	if(true) then begin
+	delay(1500);
+	teststr := stringreplace(teststr,'o','0',[rfReplaceAll, rfIgnoreCase]);
+	teststr := stringreplace(teststr,'i','1',[rfReplaceAll, rfIgnoreCase]);
+	teststr := stringreplace(teststr,'l','1',[rfReplaceAll, rfIgnoreCase]);
+	teststr := stringreplace(teststr,'?',' ',[rfReplaceAll, rfIgnoreCase]);
+		if(Pos('=',teststr) > 0) then begin
+			RegExp.Expression:= '([0-9]+ )';
+			if RegExp.Exec(teststr) then begin
+      			a := strtoint(TrimRight(RegExp.Match[0]));
+      			RegExp.ExecNext;
+      			b := strtoint(TrimRight(RegExp.Match[0]));
+      			RegExp.ExecNext;
+      			c := strtoint(TrimRight(RegExp.Match[0]));
+      			print(a+b=c);
+			end;
+			end
+			else begin
+				print((Pos('OK',teststr) > 0) or (Pos('0K',teststr)>0) or (Pos('0k',teststr) > 0) or (Pos('ok',teststr)>0));
+			end;
+		//RegExp.Free;
+		end;
+		end;
+		end;
+
+procedure tt();
+begin
+  while delay(3000) do begin
+    teststr:= '<html><title>DUALBOX CHALLENGE</title><body><center><br><br><img src="L2UI_CH3.herotower_deco" width="256" height="32"><br><br>Click on number <font color="F4F4F4">7</font><br1>Haz click en <font color="F4F4F4">7</font><table><tr><td><button action="bypass -h dualboxchallenge_268913063_wrong" back="l2ui_ch3.smallbutton2_down" width=65 height=20 fore="l2ui_ch3.smallbutton2"  value=4></td><td><button action="bypass -h dualboxchallenge_268913063_wrong" back="l2ui_ch3.smallbutton2_down" width=65 height=20 fore="l2ui_ch3.smallbutton2"  value=3></td><td><button action="bypass -h dualboxchallenge_268913063_wrong" back="l2ui_ch3.smallbutton2_down" width=65 height=20 fore="l2ui_ch3.smallbutton2"  value=0></td></tr><tr><td><button action="bypass -h dualboxchallenge_268913063_wrong" back="l2ui_ch3.smallbutton2_down" width=65 height=20 fore="l2ui_ch3.smallbutton2"  value=6></td><td><button action="bypass -h dualboxchallenge_268913063_wrong" back="l2ui_ch3.smallbutton2_down" width=65 height=20 fore="l2ui_ch3.smallbutton2"  value=8></td><td><button action="bypass -h dualboxchallenge_268913063_right" back="l2ui_ch3.smallbutton2_down" width=66 height=22 fore="l2ui_ch3.smallbutton2" value=7></td></tr><tr><td><button action="bypass -h dualboxchallenge_268913063_wrong" back="l2ui_ch3.smallbutton2_down" width=65 height=20 fore="l2ui_ch3.smallbutton2"  value=5></td><td><button action="bypass -h dualboxchallenge_268913063_wrong" back="l2ui_ch3.smallbutton2_down" width=65 height=20 fore="l2ui_ch3.smallbutton2"  value=1></td><td><button action="bypass -h dualboxchallenge_268913063_wrong" back="l2ui_ch3.smallbutton2_down" width=65 height=20 fore="l2ui_ch3.smallbutton2"  value=2></td></tr></table><br><br><font color="b09979">Retries left: 25 / Intentos restantes: 25</font></center></body></html>';
+    BypassDualboxCaptcha();
+    delay(3000);
+    teststr := ' <html><title>DUALBOX CHALLENGE</title><body><center><br><br><img src="L2UI_CH3.herotower_deco" width="256" height="32"><br><br>Click on number <font color="FF6347">6</font><br1>Haz click en <font color="FF6347">6</font><table><tr><td><button action="bypass -h dualboxchallenge_268913063_wrong" back="l2ui_ch3.smallbutton2_down" width=65 height=20 fore="l2ui_ch3.smallbutton2"  value=7></td><td><button action="bypass -h dualboxchallenge_268913063_right" back="l2ui_ch3.smallbutton2_down" width=66 height=22 fore="l2ui_ch3.smallbutton2" value=6></td><td><button action="bypass -h dualboxchallenge_268913063_wrong" back="l2ui_ch3.smallbutton2_down" width=65 height=20 fore="l2ui_ch3.smallbutton2"  value=3></td></tr><tr><td><button action="bypass -h dualboxchallenge_268913063_wrong" back="l2ui_ch3.smallbutton2_down" width=65 height=20 fore="l2ui_ch3.smallbutton2"  value=5></td><td><button action="bypass -h dualboxchallenge_268913063_wrong" back="l2ui_ch3.smallbutton2_down" width=65 height=20 fore="l2ui_ch3.smallbutton2"  value=0></td><td><button action="bypass -h dualboxchallenge_268913063_wrong" back="l2ui_ch3.smallbutton2_down" width=65 height=20 fore="l2ui_ch3.smallbutton2"  value=1></td></tr><tr><td><button action="bypass -h dualboxchallenge_268913063_wrong" back="l2ui_ch3.smallbutton2_down" width=65 height=20 fore="l2ui_ch3.smallbutton2"  value=2></td><td><button action="bypass -h dualboxchallenge_268913063_wrong" back="l2ui_ch3.smallbutton2_down" width=65 height=20 fore="l2ui_ch3.smallbutton2"  value=8></td><td><button action="bypass -h dualboxchallenge_268913063_wrong" back="l2ui_ch3.smallbutton2_down" width=65 height=20 fore="l2ui_ch3.smallbutton2"  value=4></td></tr></table><br><br><font color="b09979">Retries left: 23 / Intentos restantes: 23</font><br><br><font color="b09979">Pimp:</font> <font color="FF0000">ERROR</font><br><br><font color="b09979">PARTY:</font> <font color="FF0000">ERROR</font></center></body></html>';
+    BypassDualboxCaptcha();
+  end;
+end;
+
+procedure solveDualbox();
+begin
+  while true do begin
+    if((Pos('dual', Engine.DlgText)>0) or (Pos('Dual', Engine.DlgText)>0) or (Pos('ANTI', Engine.DlgText)>0) or (Pos('anti', Engine.DlgText)>0) or (Pos('Anti', Engine.DlgText)>0)) then begin
+      delay(1250);
+      BypassDualboxCaptcha();
+    end;
+  end;
+end;
+
+procedure BypassDualboxCaptcha();
+var
+  RegExp: TRegExpr;
+  SL: TStringList;
+  i: integer;
+  bps: string;
+begin                                           
+  RegExp:= TRegExpr.Create;                                
+  SL:= TStringList.Create;
+
+  RegExp.Expression:= '<button *(.+?)>';  
+  if RegExp.Exec(Engine.DlgText) then                      
+    repeat SL.Add(RegExp.Match[0]);                        
+    until (not RegExp.ExecNext);                            
+
+  for i:= 0 to SL.Count-1 do begin                                            
+      RegExp.Expression:= '"bypass *(.+?)right"';             
+      if RegExp.Exec(SL[ i ]) then                          
+        bps:= TrimLeft(Copy(RegExp.Match[0], 11, Length(RegExp.Match[0])-11));
+    end;
+                                                 
+  if (Length(bps) > 0) then begin
+    print('------dualbox captcha answer------' + bps);
+    Engine.BypassToServer(bps);
+  end;
+  
+  RegExp.Free;                                              
+  SL.Free;
+end;
+
+begin
+  //Script.NewThread(@UnEquip);
+  Script.NewThread(@PrintAllTags);
+  Script.NewThread(@Alert);
+  Script.NewThread(@solveRegular);
+  Script.NewThread(@solveDualbox);
+  //Script.NewThread(@test);
+  //Script.NewThread(@tt);
+
+end.

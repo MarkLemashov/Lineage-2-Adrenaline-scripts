@@ -1,0 +1,254 @@
+uses SysUtils, Classes, RegExpr;
+
+procedure selfBuff();
+begin
+  Engine.BypassToServer('_bbshome');delay(600);
+  BypassBuff('Buffer');delay(600);
+  BypassBuff('Set Mage'); delay(600);
+end;
+  
+function BypassBuff(dlg: string): boolean;
+var
+  RegExp: TRegExpr;
+  SL: TStringList;
+  i: integer;
+  bps: string;
+begin
+  Result:= true;                                           
+  RegExp:= TRegExpr.Create;                                
+  SL:= TStringList.Create;
+  
+  RegExp.Expression:= '(<a *(.+?)</a>)|(<button *(.+?)>)';
+  if RegExp.Exec(Engine.CBText) then begin
+    repeat SL.Add(RegExp.Match[0]);
+    until (not RegExp.ExecNext); end;                           
+
+  for i:= 0 to SL.Count-1 do begin                          
+    if (Pos(dlg, SL[ i ]) > 0) then begin                   
+      RegExp.Expression:= '"bypass *(.+?)"';             
+      if RegExp.Exec(SL[ i ]) then
+        bps:= TrimLeft(Copy(RegExp.Match[0], 8, Length(RegExp.Match[0])-8));
+    end;
+  end;
+                                                
+  if (Length(bps) > 0) then Engine.BypassToServer(bps);     
+  
+  RegExp.Free;                                              
+  SL.Free;
+end;
+
+function BypassTeleport(dlg: string): boolean;
+var
+  RegExp: TRegExpr;
+  SL: TStringList;
+  i: integer;
+  bps: string;
+begin
+  Result:= true;                                           
+  RegExp:= TRegExpr.Create;                                
+  SL:= TStringList.Create;
+  
+  RegExp.Expression:= '(<a *(.+?)</a>)|(<button *(.+?)>)';  
+  if RegExp.Exec(Engine.CBText) then                      
+    repeat SL.Add(RegExp.Match[0]);                        
+    until (not RegExp.ExecNext);                            
+
+  for i:= 0 to SL.Count-1 do begin                          
+    if (Pos(dlg, SL[ i ]) > 0) then begin                   
+      RegExp.Expression:= '"bypass *(.+?)"';             
+      if RegExp.Exec(SL[ i ]) then                          
+        bps:= TrimLeft(Copy(RegExp.Match[0], 8, Length(RegExp.Match[0])-8));
+    end;
+  end;
+                                                 
+  if (Length(bps) > 0) then Engine.BypassToServer(bps);     
+  
+  RegExp.Free;                                              
+  SL.Free;
+end;
+
+procedure Teleport();
+begin
+  Engine.BypassToServer('_bbshome');delay(600);
+  BypassTeleport('Tele');delay(600);
+  BypassTeleport('Town Are'); delay(600);
+  BypassTeleport('Godd'); delay(600);
+  BypassTeleport('Hot'); delay(600);
+end;
+
+procedure PathMoveTo(path: array of integer);                
+var
+i: integer;
+bol: boolean;
+begin
+  Script.Suspend;
+  for i:=0 to Length(path)-1 do begin
+    while( (User.DistTo(path[i],path[i+1],path[i+2])>600) and (not User.InZone) and not(User.Dead)) do begin
+      Engine.DMoveTo(path[i],path[i+1],path[i+2]);
+      clearPath(path[i],path[i+1],path[i+2]);
+    end;
+    i:= i+2;
+    end;
+    Script.Resume;
+end;
+
+procedure returnOnDeathThread();
+begin
+  while delay(300) do begin
+    delay(555);
+    if (User.Dead) then begin delay(1000); Engine.GoHome();delay(5*60*1000);
+      selfBuff();delay(500);
+      Teleport();delay(555);
+      Engine.MoveTo(144840, -113080, -2560);
+      Engine.MoveTo(144520, -112264, -3384);
+      Engine.MoveTo(144472, -111416, -3512);
+      Engine.MoveTo(144360, -110104, -3520);
+      Engine.MoveTo(144440, -109416, -3504);
+    end;
+  end;
+end;
+
+procedure RebuffThread();
+var
+  Obj : TL2Effect;
+begin
+  while delay(1000) do begin
+    if (((not User.Buffs.ByName('Magic Barrier',Obj)) or (Obj.EndTime<300000)) and (not User.Dead)) then begin
+      while(User.InCombat) do delay(550);
+      if(not User.Dead) then selfBuff(); end;
+  end;
+end;
+
+procedure clearPath(x,y,z:integer);
+var
+  i:integer;
+begin
+  for i:= 0 to NpcList.Count-1 do begin
+    if (User.DistTo(NpcList(i))<480) and(NpcList(i).DistTo(x,y,z)<500) and (not NpcList(i).Dead) then begin
+      while(not NpcList(i).Dead and (not User.Dead)) do begin
+        Engine.SetTarget(NpcList(i));
+        Engine.UseSkill('Hurricane');
+        Engine.UseSkill('Vampiric Claw');
+      end;
+    end;
+  end;
+end;
+
+function CaptchaResult(Adenas : TDropList) : string;
+var
+  i,bottomLeftX,BottomLeftY:integer;
+begin
+  Result := '';
+  bottomLeftX := findLeftX(Adenas);
+  BottomLeftY := findBottomY(Adenas);
+  print(findNumber(Adenas,bottomLeftX+12*5,BottomLeftY)+findNumber(Adenas,bottomLeftX+6*5,BottomLeftY)+findNumber(Adenas,bottomLeftX,BottomLeftY));
+  Result:=findNumber(Adenas,bottomLeftX+12*5,BottomLeftY)+findNumber(Adenas,bottomLeftX+6*5,BottomLeftY)+findNumber(Adenas,bottomLeftX,BottomLeftY);
+end;
+
+function Exists(Adenas : TDropList; x,y: integer) : Boolean;
+var
+ i:integer;
+begin
+  Result := false;
+  for i:=0 to (Adenas.Count-1) do begin
+    if((Adenas.Items(i).X = x) and (Adenas.Items(i).Y = y)) then begin
+      Result := true;
+      break;
+    end;
+  end;
+end;
+
+function findLeftX(Adenas : TDropList) : integer;
+var
+  i:integer;
+begin
+  Result := 9999999;
+  for i:=0 to Adenas.Count-1 do begin
+    if (Adenas.Items(i).X < Result) and (User.DistTo(Adenas.Items(i))<61) then Result:=Adenas.Items(i).X;
+  end;
+end;
+
+function findBottomY(Adenas : TDropList) : integer;
+var
+  i:integer;
+begin
+  Result := 9999999;
+  for i:=0 to Adenas.Count-1 do begin
+    if (Adenas.Items(i).Y < Result) and (User.DistTo(Adenas.Items(i))<61) then Result:=Adenas.Items(i).Y;
+  end;
+end;
+
+function findNumber(Adenas: TDropList; X,Y : integer): string;
+begin
+  Result:= '';
+  if (not Exists(Adenas,X,Y+5*5)) then begin Result:='2'; Exit; end;
+  
+  if(not Exists(Adenas,X+2*5,Y+4*5)) then begin
+    if(Exists(Adenas,X+2*5,Y+10*5)) then begin Result:='7'; Exit; end
+    else begin
+      if(Exists(Adenas,X+3*5,Y+8*5)) then begin Result:='4'; Exit; end
+      else begin Result:='1'; Exit; end;
+    end;
+  end;
+
+  if(not Exists(Adenas,X,Y+8*5)) then begin
+    if(Exists(Adenas,X+3*5,Y+5*5)) then begin Result:='6'; Exit; end
+    else begin Result:='5'; Exit; end;
+  end;
+
+  if(not Exists(Adenas,X+3*5,Y+9*5)) then begin Result:='3'; Exit; end;
+
+  if(not Exists(Adenas,X+3*5,Y+5*5)) then begin Result:='9'; Exit; end;
+
+  if(not Exists(Adenas,X+1*5,y+7*5)) then begin Result:='0';Exit;end;
+  
+  Result:='8';
+end;
+
+function BypassCaptcha(dlg: string): string;
+var
+  RegExp: TRegExpr;
+  SL: TStringList;
+  i: integer;
+  bps: string;
+begin
+  Result:= '';                                           
+  RegExp:= TRegExpr.Create;                                
+  SL:= TStringList.Create;
+  
+  RegExp.Expression:= '(<a *(.+?)</a>)|(<button *(.+?)>)';
+  if RegExp.Exec(Engine.DlgText) then begin
+    repeat SL.Add(RegExp.Match[0]);
+    until (not RegExp.ExecNext); end;                           
+
+  for i:= 0 to SL.Count-1 do begin                          
+    if (Pos(dlg, SL[ i ]) > 0) then begin                   
+      RegExp.Expression:= '"bypass *(.+?)"';             
+      if RegExp.Exec(SL[ i ]) then
+        Result:= TrimRight(TrimLeft(Copy(RegExp.Match[0], 11, Length(RegExp.Match[0])-19)));
+    end;
+  end;
+                                                   
+  RegExp.Free;                                              
+  SL.Free;
+end;
+
+procedure AntiCaptchaThread();
+begin
+  while delay(1000) do begin
+    if(DropList.Count > 30) then begin
+      print('PRINTING THIS SHIT: '+BypassCaptcha('Submit')+' '+CaptchaResult(DropList));
+      Engine.BypassToServer(BypassCaptcha('Submit')+' '+CaptchaResult(DropList));
+      Engine.Say('?',0,'');
+      delay(5*1000);
+    end;
+  end;
+end;
+
+begin
+  Script.NewThread(@returnOnDeathThread);
+  Script.NewThread(@AntiCaptchaThread);
+  Script.NewThread(@RebuffThread);
+  //Script.NewThread(@RetunToCenterWhenNoMobsThread)
+
+end.

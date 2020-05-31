@@ -1,0 +1,37 @@
+uses SysUtils, Classes;
+
+var
+  LastTarget : TL2Live;
+  CurrTarget : TL2Char;
+
+procedure RetargetThread();
+var
+  T: Cardinal;
+  i: Integer;
+  flag : Boolean;
+begin
+  while delay(10) do begin
+  if(User.Target <> nil) then begin LastTarget:=User.Target; end
+  else Engine.SetTarget(LastTarget);
+  end;
+end;
+
+procedure ESCThread();
+var
+    myKey,b,i : integer;
+    flag : Boolean;
+begin
+  flag := True;
+    while true do begin
+        Engine.WaitAction([lakey],myKey,b);
+        if (myKey = 192) then begin
+          if(flag = True) then begin Script.Pause; flag:= False; end
+          else begin Script.Resume; flag:=True end;
+        end;
+    end;
+end;
+
+begin
+  Script.NewThread(@RetargetThread);
+  Script.NewThread(@ESCThread);
+end.

@@ -1,0 +1,50 @@
+uses SysUtils, Classes, RegExpr;
+  
+function BypassBuff(): boolean;
+var
+  RegExp: TRegExpr;
+  SL: TStringList;
+  i: integer;
+  bps: string;
+begin
+  Result:= true;                                           
+  RegExp:= TRegExpr.Create;                                
+  SL:= TStringList.Create;
+  
+  RegExp.Expression:= '<(.+?)>';
+  if RegExp.Exec(Engine.CBText) then begin
+    repeat print(RegExp.Match[0]);
+    until (not RegExp.ExecNext); end;                           
+                                                   
+  
+  RegExp.Free;                                              
+  SL.Free;
+end;
+
+function BypassBufff(): boolean;
+var
+  RegExp: TRegExpr;
+  SL: TStringList;
+  i: integer;
+  bps: string;
+begin
+  Result:= true;                                           
+  RegExp:= TRegExpr.Create;                                
+  SL:= TStringList.Create;
+  
+  RegExp.Expression:= '<(.+?)>';
+  if RegExp.Exec(Engine.DlgText) then begin
+    repeat print(RegExp.Match[0]);
+    until (not RegExp.ExecNext); end;                           
+                                                   
+  
+  RegExp.Free;                                              
+  SL.Free;
+end;
+
+begin
+     while delay(3000) do begin
+      BypassBuff();
+      BypassBufff();
+     end;
+end.

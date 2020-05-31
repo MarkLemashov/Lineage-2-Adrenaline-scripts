@@ -1,0 +1,88 @@
+uses SysUtils, Classes, RegExpr;
+
+procedure selfBuff();
+begin
+  Engine.BypassToServer('_bbshome');delay(600);
+  BypassBuff('Buffer');delay(600);
+  BypassBuff('Set Mage'); delay(600);
+end;
+  
+function BypassBuff(dlg: string): boolean;
+var
+  RegExp: TRegExpr;
+  SL: TStringList;
+  i: integer;
+  bps: string;
+begin
+  Result:= true;                                           
+  RegExp:= TRegExpr.Create;                                
+  SL:= TStringList.Create;
+  
+  RegExp.Expression:= '(<a *(.+?)</a>)|(<button *(.+?)>)';
+  if RegExp.Exec(Engine.CBText) then begin
+    repeat SL.Add(RegExp.Match[0]);
+    until (not RegExp.ExecNext); end;                           
+
+  for i:= 0 to SL.Count-1 do begin                          
+    if (Pos(dlg, SL[ i ]) > 0) then begin                   
+      RegExp.Expression:= '"bypass *(.+?)"';             
+      if RegExp.Exec(SL[ i ]) then
+        bps:= TrimLeft(Copy(RegExp.Match[0], 8, Length(RegExp.Match[0])-8));
+    end;
+  end;
+                                                
+  if (Length(bps) > 0) then Engine.BypassToServer(bps);     
+  
+  RegExp.Free;                                              
+  SL.Free;
+end;
+
+function BypassTeleport(dlg: string): boolean;
+var
+  RegExp: TRegExpr;
+  SL: TStringList;
+  i: integer;
+  bps: string;
+begin
+  Result:= true;                                           
+  RegExp:= TRegExpr.Create;                                
+  SL:= TStringList.Create;
+  
+  RegExp.Expression:= '(<a *(.+?)</a>)|(<button *(.+?)>)';  
+  if RegExp.Exec(Engine.CBText) then                      
+    repeat SL.Add(RegExp.Match[0]);                        
+    until (not RegExp.ExecNext);                            
+
+  for i:= 0 to SL.Count-1 do begin                          
+    if (Pos(dlg, SL[ i ]) > 0) then begin                   
+      RegExp.Expression:= '"bypass *(.+?)"';             
+      if RegExp.Exec(SL[ i ]) then                          
+        bps:= TrimLeft(Copy(RegExp.Match[0], 8, Length(RegExp.Match[0])-8));
+    end;
+  end;
+                                                 
+  if (Length(bps) > 0) then Engine.BypassToServer(bps);     
+  
+  RegExp.Free;                                              
+  SL.Free;
+end;
+
+procedure rebuffThread();
+var
+  Obj : TL2Effect;
+begin
+  while delay(1000) do begin
+    if ((not User.Buffs.ByName('Wild Magic',Obj)) or (Obj.EndTime<300000)) then begin
+      while(not User.Target.Dead and (not User.Dead)) do begin
+        Engine.UseSkill('Hurricane');
+        if (User.HP <85) then Engine.UseSkill('Vampiric Claw');
+      end;
+      while(User.InCombat) do delay(550);
+      if(not User.Dead) then selfBuff();
+    end;
+  end;
+end;
+
+begin
+  Script.NewThread(@rebuffThread);
+end.

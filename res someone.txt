@@ -1,0 +1,19 @@
+uses SysUtils, Classes;
+
+procedure ResSensitive();
+var
+    resTarget : TL2Char;
+begin
+  while true do begin
+      CharList.ByName('Sensitiv',resTarget);
+      if(resTarget.Dead) then begin
+          Engine.SetTarget(resTarget);
+          Engine.UseSkill('Resurrection');
+      end;
+  end;
+end;
+
+
+begin
+    Script.NewThread(@ResSensitive);
+end.
